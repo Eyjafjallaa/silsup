@@ -119,3 +119,6 @@ dist
 
 #config
 config/
+
+#public
+public/
