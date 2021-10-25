@@ -1,4 +1,4 @@
-const secret = require('../secret/tokenkey');
+const secret = require('../config/tokenkey');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 

@@ -13,7 +13,7 @@ module.exports.executePreparedStatement = async (sql, params)=>{
                 sql, 
                 params
             );
-        return rows;
+        return {rows, fields};
     } catch(err){
         //console.log(err);
         throw(err);
