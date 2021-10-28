@@ -18,10 +18,10 @@ router.get('/id/:id',async(req,res)=>{
         const params=[req.params.id];
         var result =(await db.executePreparedStatement(sql,params)).rows;
         if(result.length>0){
-            res.status(200).send('exist')
+            res.status(200).json({msg:'exist'})
         }
         else{
-            res.status(200).send('available');
+        res.status(200).json({msg:'available'});
         }
     } catch (error) {
         res.status(400).json(error);
@@ -48,7 +48,7 @@ router.post('/',fileload.single('attachment'),async(req, res)=> {
             expiresIn: "772H"
         })
         res.status(200).json({
-            logintoken: token,
+            msg: token,
         });
     }
     catch(err){
@@ -63,7 +63,7 @@ router.post('/quick',decode,async(req,res)=>{
         const sql = "UPDATE sign SET quick=? WHERE ID = ?"
         const params = [quickpw, req.token.sub];
         await db.executePreparedStatement(sql,params);
-        res.status(200).send("success");
+        res.status(200).json({msg:"success"});
     } catch (error) {
         res.status(400).json(error);
     }

@@ -22,11 +22,11 @@ router.post('/',async(req, res)=> {
                 expiresIn: "772H"
             })
             res.status(200).json({
-                logintoken: token,
+                msg: token,
             });
         }
         else{
-            res.status(200).send('fail')
+            res.status(200).send({msg:'fail'})
         }
     } catch (error) {
         res.status(400).json(error);
@@ -48,11 +48,11 @@ router.post('/quick',decode,async(req,res)=>{
                 expiresIn: "772H"
             })
             res.status(200).json({
-                logintoken: token,
+                msg: token,
             });
         }
         else{
-            res.status(200).send('fail')
+            res.status(200).send({msg:'fail'})
         }
     } catch (error) {
         console.log(error);

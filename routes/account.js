@@ -26,7 +26,7 @@ router.post('/',decode, async(req, res)=> {
       const params = [defaultaccountID+ID, pw, defaultMoney,req.token.sub ,req.body.nickname];
       
       await db.executePreparedStatement(sql, params);
-      res.status(200).send('success');
+      res.status(200).send({msg:'success'});
   } catch (error) {
       console.log(error);
       res.status(400).json(error);
@@ -39,9 +39,9 @@ router.post('/check',decode,async(req,res)=>{
     var params = [req.token.sub,req.body.nickname,req.token.birth];
     const result = (await db.executePreparedStatement(sql,params)).rows;
     if (result.length==0){
-      res.status(200).send('fail');
+      res.status(200).send({msg:'fail'});
     }else{
-      res.status(200).send('success');
+      res.status(200).json({msg:'success'});
     }
   } catch (error) {
     res.status(400).json(error);
@@ -54,9 +54,9 @@ router.get("/name/:name",async(req,res)=>{
     const params= [req.params.name]
     var result = (await db.executePreparedStatement(sql,params)).rows
     if(result.length==0){
-      res.status(200).send('available')
+      res.status(200).send({msg:'available'})
     }else{
-      res.status(200).send('exist');
+      res.status(200).send({msg:'exist'});
     }
   } catch (error) {
     console.log(error);
