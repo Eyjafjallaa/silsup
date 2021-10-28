@@ -12,7 +12,7 @@ router.post('/',async(req, res)=> {
         const sql = "SELECT * FROM sign WHERE id = ? AND pw = ?";
         const params = [req.body.id,pw];
         const result = (await db.executePreparedStatement(sql,params)).rows;
-        //console.log(result)
+        // console.log(result)
         if(result.length>0){
             var user = {
                 sub: req.body.id,

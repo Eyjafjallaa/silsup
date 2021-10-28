@@ -11,8 +11,8 @@ const tokendecode = (req,res,next) => {
             return;
         }    
         req.token = data;
+        next();
     })
-    next();
 }
 
 
