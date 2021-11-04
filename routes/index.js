@@ -8,10 +8,12 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
+
 router.get('/a',async(req,res)=>{
-  request({url:URL.kakao.URL+'account/find/id/001354799393'},(err,resP,body)=>{
-    console.log(resP.body);
-    res.json(resP.body)
+  request({url:URL.kakao.URL+'account/find/id/001354799393'},(err,data,body)=>{
+    result = JSON.parse(data.body)
+    console.log(result);
+    res.json(result)
   })
 })
 module.exports = router;
