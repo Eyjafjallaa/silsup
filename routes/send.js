@@ -8,10 +8,11 @@ const crypto = require('crypto');
 router.put('/',async(req,res)=>{
     try {
         console.log(req.body);
-        if(req.body.targetAccount.substr(0,3)=='003'){
+        const banknum = req.body.targetAccount.substr(0,3);
+        if(banknum =='003'){
             console.log('json')
         }else{
-    
+            
         }    
     } catch (error) {
         
@@ -20,23 +21,27 @@ router.put('/',async(req,res)=>{
 })
 
 router.get('/check/:accountID',async(req,res)=>{
-    if(req.body.targetAccount.substr(0,3)=='003'){
-        try {
+    const banknum = req.body.targetAccount.substr(0,3);
+
+    try {
+        if(banknum=='003'){
             const sql = 'select * from accounts WHERE ID = ?'
-            const params=[req.params.accountID];
-            var result = (await db.executePreparedStatement(sql,params)).rows;
-            if(result.length === 1){
-                res.status(200).json({'msg':'success'})
-            }else{
-                res.status(200).json({'msg':'fail'})
+            const params = [req.params.accountID];
+            var result = (await db.executePreparedStatement(sql, params)).rows;
+            if (result.length === 1) {
+                res.status(200).json({ 'msg': 'success' })
+            } else {
+                res.status(200).json({ 'msg': 'fail' })
             }
-        } catch (error) {
-            console.log(error);
-            res.status(400).json(error);
         }
-    }else{
-        
-    }  
+        else{
+            
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(400).json(error);
+    }
+    
     
   })
 

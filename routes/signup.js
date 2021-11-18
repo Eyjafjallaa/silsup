@@ -69,4 +69,14 @@ router.post('/quick',decode,async(req,res)=>{
     }
 })
 
+router.get('/profile',decode,async(req,res,next)=>{
+    try {
+        const sql="SELECT phonenum,birth,name,nickname from sign WHERE id = ?"
+        const params =[req.token.sub];
+        const result = (await db.executePreparedStatement(sql,params)).rows;
+        res.status(200).json(result[0]);
+    } catch (error) {
+        res.status(400).json(error);
+    }
+})
 module.exports = router;

@@ -36,8 +36,10 @@ router.post('/',decode, async(req, res)=> {
 router.post('/check',decode,async(req,res)=>{
   try {
     var sql = "SELECT * FROM sign WHERE ID=? AND name=? AND birth=?";
-    var params = [req.token.sub,req.body.nickname,req.token.birth];
+    var params = [req.token.sub,req.body.name,req.body.birth];
+    // console.log(params)
     const result = (await db.executePreparedStatement(sql,params)).rows;
+    console.log(result);
     if (result.length==0){
       res.status(200).send({msg:'fail'});
     }else{
