@@ -39,7 +39,7 @@ router.post('/check',decode,async(req,res)=>{
     var params = [req.token.sub,req.body.name,req.body.birth];
     // console.log(params)
     const result = (await db.executePreparedStatement(sql,params)).rows;
-    console.log(result);
+    // console.log(result);
     if (result.length==0){
       res.status(200).send({msg:'fail'});
     }else{

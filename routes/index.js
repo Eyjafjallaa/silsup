@@ -10,8 +10,15 @@ router.get('/', function(req, res, next) {
 
 
 router.get('/a',async(req,res)=>{
-  request({url:URL.kakao.URL+'account/find/id/001354799393'},(err,data,body)=>{
-    result = JSON.parse(data.body)
+  var server;
+  for(var x of URL){
+    if (x.bankNum=="001"){
+      server= x.URL;
+    }
+  }
+  request({url:server+'account/find/id/001354799393'},(err,data,body)=>{
+    result = JSON.parse(body)
+    // console.log(body)
     console.log(result);
     res.json(result)
   })
