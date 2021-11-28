@@ -13,13 +13,12 @@ router.get('/a',async(req,res)=>{
   var server;
   for(var x of URL){
     if (x.bankNum=="001"){
-      server= x.URL;
+      server= x;
     }
   }
-  request({url:server+'account/find/id/001354799393'},(err,data,body)=>{
+  request({url:server.URL+server.sendURL},(err,data,body)=>{
     result = JSON.parse(body)
-    // console.log(body)
-    console.log(result);
+    // console.log(result);
     res.json(result)
   })
 })

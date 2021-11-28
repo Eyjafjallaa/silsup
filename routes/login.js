@@ -34,8 +34,8 @@ router.post('/',async(req, res)=> {
 });
 
 router.post('/quick',decode,async(req,res)=>{
-    var quickpw = crypto.createHash('sha512').update(req.body.quickpw).digest('base64');
     try {
+        var quickpw = crypto.createHash('sha512').update(req.body.quickpw).digest('base64');
         const sql = "SELECT id FROM sign WHERE id = ? AND quick = ?";
         const params = [req.token.sub,quickpw];
         const result = (await db.executePreparedStatement(sql,params)).rows;

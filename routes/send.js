@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const API = require('../config/APIconfig');
 var request = require('request');
 
-router.put('/',decode,async(req,res)=>{
+router.put('/',decode,async(req,res)=>{// 송금
     try {
         console.log(req.body);
         const banknum = req.body.targetAccount.substr(0,3);
@@ -22,42 +22,51 @@ router.put('/',decode,async(req,res)=>{
     res.send('')
 })
 
-router.get('/check/:accountID',decode,async(req,res)=>{
-    const banknum = req.params.accountID.substr(0,3);
-    console.log(banknum)
+router.get('/check/local/:accountID',async(req,res)=>{
     try {
-        if(banknum=='003'){
-            var sql = 'select accounts.ID as accountID, accounts.money, sign.phonenum as userPhone from accounts left join sign ON accounts.sign_ID = sign.ID WHERE accounts.ID = ?'
-            const params = [req.params.accountID];
-            var result = (await db.executePreparedStatement(sql, params)).rows;
-            sql = 'select sign.phonenum as phone, sign.name, sign.id, sign.birth from accounts left join sign ON accounts.sign_ID = sign.ID WHERE accounts.ID = ?'
-            var user = (await db.executePreparedStatement(sql,params)).rows[0]
-            if (result.length === 1) {
-                result[0].user=user;
-                res.status(200).json({ 
-                    status:200,
-                    msg: 'success' ,
-                    data:result[0]
-                })
-            } else {
-                res.status(200).json({ 'msg': 'fail' })
-            }
-        }
-        else{
-            var server;
-            for(var url of API){
-                console.log(url)
-                if(banknum==url.bankNum){
-                    server = url.URL;
-                    break;
-                }
-            }
-            request({url:server+'account/find/id/'+req.params.accountID},(err,data,body)=>{
-                if(err)throw err;
-                body = JSON.parse(body);
-                res.status(body.status).json(body);
+        var sql = 'select accounts.ID as accountID, accounts.money, sign.phonenum as userPhone from accounts left join sign ON accounts.sign_ID = sign.ID WHERE accounts.ID = ?'
+        const params = [req.params.accountID];
+        var result = (await db.executePreparedStatement(sql, params)).rows;
+        sql = 'select sign.phonenum as phone, sign.name, sign.id, sign.birth from accounts left join sign ON accounts.sign_ID = sign.ID WHERE accounts.ID = ?'
+        var user = (await db.executePreparedStatement(sql,params)).rows[0]
+        if (result.length === 1) {
+            result[0].user=user;
+            res.status(200).json({ 
+                status:200,
+                msg: 'success' ,
+                data:result[0]
+            })
+        } else {
+            res.status(200).json({ 
+                status:200,
+                'msg': 'fail', 
             })
         }
+    } catch (error) {
+        console.log(error);
+        res.status(400).json(error);
+    }
+})
+
+router.get('/check/:accountID',decode,async(req,res)=>{
+    const banknum = req.params.accountID.substr(0,3);
+    // console.log(banknum)
+    try {
+        var server;
+        for (var x of API) {
+            // console.log(x)
+            if (banknum == x.bankNum) {
+                server = x;
+                break;
+            }
+        }
+        // console.log(server.URL + server.findURL + req.params.accountID)
+        request({ url: server.URL + server.findURL + req.params.accountID }, (err, data, body) => {
+            if (err) throw err;
+            body = JSON.parse(body);
+            res.status(body.status).json(body);
+        })
+
     } catch (error) {
         console.log(error);
         res.status(400).json(error);
