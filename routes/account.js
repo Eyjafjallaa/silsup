@@ -6,8 +6,25 @@ const defaultMoney= require('../config/default').money;
 const defaultaccountID=require('../config/default').accountStartNum;
 const crypto = require('crypto');
 
-/* GET home page. */
-router.post('/',decode, async(req, res)=> {
+
+router.get('/',decode, async(req,res,next)=>{
+  try {
+    var sql = 'select accounts.ID as accountID, accounts.money, sign.phonenum as userPhone, accounts.nickname from accounts left join sign ON accounts.sign_ID = sign.ID WHERE sign.ID= ?'
+    const params = [req.token.sub];
+    var result = (await db.executePreparedStatement(sql, params)).rows;
+    sql = 'select sign.phonenum as phone, sign.name, sign.id, sign.birth from accounts left join sign ON accounts.sign_ID = sign.ID WHERE sign.ID = ?'
+    var user = (await db.executePreparedStatement(sql,params)).rows[0]
+    for(i in result){
+      result[i].user=user;
+    }
+    res.status(200).json(result); 
+  } catch (error) {
+    error.status = 400;
+    next(error);
+  }
+})
+
+router.post('/',decode, async(req, res, next)=> {
   try {
       if(req.body.pw.length!=4){
         res.send(200).send('wrong passowrd');
@@ -28,12 +45,12 @@ router.post('/',decode, async(req, res)=> {
       await db.executePreparedStatement(sql, params);
       res.status(200).send({msg:'success'});
   } catch (error) {
-      console.log(error);
-      res.status(400).json(error);
+      error.status=400;
+      next(error);
   }
 });
 
-router.post('/check',decode,async(req,res)=>{
+router.post('/check',decode,async(req,res,next)=>{
   try {
     var sql = "SELECT * FROM sign WHERE ID=? AND name=? AND birth=?";
     var params = [req.token.sub,req.body.name,req.body.birth];
@@ -46,11 +63,12 @@ router.post('/check',decode,async(req,res)=>{
       res.status(200).json({msg:'success'});
     }
   } catch (error) {
-    res.status(400).json(error);
+    error.status(400);
+    next(error);
   }
 })
 
-router.get("/name/:name",async(req,res)=>{
+router.get("/name/:name",async(req,res,next)=>{
   try {
     const sql= "SELECT * FROM accounts WHERE nickname = ?"
     const params= [req.params.name]
@@ -61,8 +79,8 @@ router.get("/name/:name",async(req,res)=>{
       res.status(200).send({msg:'exist'});
     }
   } catch (error) {
-    console.log(error);
-    res.status(400).json(error);
+    error.status(400);
+    next(error);
   }
 })
 

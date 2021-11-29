@@ -12,7 +12,7 @@ router.get('/', async (req, res)=> {
   res.send({title:"something responded"})
 });
 
-router.get('/id/:id',async(req,res)=>{
+router.get('/id/:id',async(req,res,next)=>{
     try {
         const sql="SELECT id FROM sign WHERE id = ?";
         const params=[req.params.id];
@@ -24,12 +24,13 @@ router.get('/id/:id',async(req,res)=>{
         res.status(200).json({msg:'available'});
         }
     } catch (error) {
-        res.status(400).json(error);
+        error.status(400);
+        next(error);
     }
 })
 
 
-router.post('/',fileload.single('attachment'),async(req, res)=> {
+router.post('/',fileload.single('attachment'),async(req, res,next)=> {
     console.log(req.body);
     try{
         var pw = crypto.createHash('sha512').update(req.body.pw).digest('base64');
@@ -52,12 +53,12 @@ router.post('/',fileload.single('attachment'),async(req, res)=> {
         });
     }
     catch(err){
-        console.log(err);
-        res.status(400).json({err});
+        error.status(400);
+        next(error);
     }
 });
 
-router.post('/quick',decode,async(req,res)=>{
+router.post('/quick',decode,async(req,res,next)=>{
     var quickpw = crypto.createHash('sha512').update(req.body.quickpw).digest('base64');
     try {
         const sql = "UPDATE sign SET quick=? WHERE ID = ?"
@@ -65,7 +66,8 @@ router.post('/quick',decode,async(req,res)=>{
         await db.executePreparedStatement(sql,params);
         res.status(200).json({msg:"success"});
     } catch (error) {
-        res.status(400).json(error);
+        error.status(400);
+        next(error);
     }
 })
 
@@ -76,7 +78,8 @@ router.get('/profile',decode,async(req,res,next)=>{
         const result = (await db.executePreparedStatement(sql,params)).rows;
         res.status(200).json(result[0]);
     } catch (error) {
-        res.status(400).json(error);
+        error.status(400);
+        next(error);
     }
 })
 module.exports = router;

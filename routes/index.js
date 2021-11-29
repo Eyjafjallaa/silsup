@@ -9,17 +9,13 @@ router.get('/', function(req, res, next) {
 });
 
 
-router.get('/a',async(req,res)=>{
-  var server;
-  for(var x of URL){
-    if (x.bankNum=="001"){
-      server= x;
-    }
+router.get('/a',async(req,res,next)=>{
+  try {
+    const a=[];
+    a=[];
+    res.status(200).json({});
+  } catch (error) {
+    next(error);
   }
-  request({url:server.URL+server.sendURL},(err,data,body)=>{
-    result = JSON.parse(body)
-    // console.log(result);
-    res.json(result)
-  })
 })
 module.exports = router;

@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const tokenkey = require('../config/tokenkey');
 const decode = require('../middleware/token');
 
-router.post('/',async(req, res)=> {
+router.post('/',async(req, res, next)=> {
     var pw = crypto.createHash('sha512').update(req.body.pw).digest('base64');
     try {
         const sql = "SELECT * FROM sign WHERE id = ? AND pw = ?";
@@ -29,11 +29,12 @@ router.post('/',async(req, res)=> {
             res.status(200).send({msg:'fail'})
         }
     } catch (error) {
-        res.status(400).json(error);
+        error.status=400;
+        next(error);
     }
 });
 
-router.post('/quick',decode,async(req,res)=>{
+router.post('/quick',decode,async(req,res,next)=>{
     try {
         var quickpw = crypto.createHash('sha512').update(req.body.quickpw).digest('base64');
         const sql = "SELECT id FROM sign WHERE id = ? AND quick = ?";
@@ -55,8 +56,8 @@ router.post('/quick',decode,async(req,res)=>{
             res.status(200).send({msg:'fail'})
         }
     } catch (error) {
-        console.log(error);
-        res.status(400).json(error);
+        error.status=400;
+        next(error);
     }
 })
 module.exports = router;

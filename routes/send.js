@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const API = require('../config/APIconfig');
 var request = require('request');
 
-router.put('/',decode,async(req,res)=>{// 송금
+router.put('/',decode,async(req,res,next)=>{// 송금
     try {
         console.log(req.body);
         const banknum = req.body.targetAccount.substr(0,3);
@@ -22,7 +22,7 @@ router.put('/',decode,async(req,res)=>{// 송금
     res.send('')
 })
 
-router.get('/check/local/:accountID',async(req,res)=>{
+router.get('/check/local/:accountID',async(req,res,next)=>{
     try {
         var sql = 'select accounts.ID as accountID, accounts.money, sign.phonenum as userPhone from accounts left join sign ON accounts.sign_ID = sign.ID WHERE accounts.ID = ?'
         const params = [req.params.accountID];
@@ -38,17 +38,17 @@ router.get('/check/local/:accountID',async(req,res)=>{
             })
         } else {
             res.status(200).json({ 
-                status:200,
-                'msg': 'fail', 
+                status:403,
+                'msg': '등록되지 않은 계좌 입니다.', 
             })
         }
     } catch (error) {
-        console.log(error);
-        res.status(400).json(error);
+        error.status(400);
+        next(error);
     }
 })
 
-router.get('/check/:accountID',decode,async(req,res)=>{
+router.get('/check/:accountID',decode,async(req,res,next)=>{
     const banknum = req.params.accountID.substr(0,3);
     // console.log(banknum)
     try {
@@ -68,12 +68,12 @@ router.get('/check/:accountID',decode,async(req,res)=>{
         })
 
     } catch (error) {
-        console.log(error);
-        res.status(400).json(error);
+        error.status(400);
+        next(error);
     }
 })
 
-  router.post('/pw',async(req,res)=>{
+  router.post('/pw',async(req,res,next)=>{
       try {
         const sql = "SELECT * FROM accounts WHERE pw = ? AND ID=?"
         var pw = crypto.createHash('sha512').update(req.body.pw).digest('base64');
@@ -85,8 +85,8 @@ router.get('/check/:accountID',decode,async(req,res)=>{
             res.status(200).json({'msg':'fail'})
         }
       } catch (error) {
-          console.log(error);
-          res.status(400).json(error)  
+        error.status(400);
+        next(error); 
       }
   })
 module.exports=router;
