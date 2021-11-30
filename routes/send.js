@@ -7,19 +7,92 @@ const crypto = require('crypto');
 const API = require('../config/APIconfig');
 var request = require('request');
 
-router.put('/',decode,async(req,res,next)=>{// 송금
+router.post('/',decode,async(req,res,next)=>{// 송금
     try {
-        console.log(req.body);
-        const banknum = req.body.targetAccount.substr(0,3);
-        if(banknum =='003'){
-            console.log('json')
-        }else{
-            
-        }    
-    } catch (error) {
+        // 서버 통신주소 찾기
+        const banknum = req.body.receiveAccountId.substr(0,3);
+        var server;
+        for (var x of API) {
+            if (banknum == x.bankNum) {
+                server = x;
+                break;
+            }
+        }
+
+        //돈 출금
+        var sql = "SELECT * from accounts WHERE id = ? "
+        var params = [req.body.sendAccountId];
+        const account = (await db.executePreparedStatement(sql,params)).rows;
+        if (!account) {
+            throw {
+                status : 403,
+                msg : '계좌가 없습니다.'
+            }
+        }
+        if(account.money < req.body.money){
+            throw{
+                status :403,
+                msg : '돈이 부족합니다.'
+            }
+        }
+        sql = "UPDATE accounts SET money = money - ? WHERE ID = ?";
+        params = [req.body.money,req.body.sendAccountId];
+        await db.executePreparedStatement(sql,params);
         
+        sql = "INSERT INTO log (send, receive, money) VALUES(?,?,?)"
+        params = [req.body.sendAccountId, req.body.receiveAccountId,req.body.money];
+        await db.executePreparedStatement(sql,params);
+
+        const options = {
+            uri : server.URL+server.sendURL,
+            method: 'POST',
+            json:true,
+            body: {
+                sendAccountId: req.body.sendAccountId,
+                receiveAccountId: req.body.receiveAccountId,
+                money: req.body.money,
+            }
+        }
+
+        //입금
+        request.post(options,(err,data,body)=>{
+            if(err) throw err;
+            console.log(body);
+            // body = JSON.parse(body)
+            res.status(body.status).json(body);
+        })     
+        
+    } catch (error) {
+        if(!error.status)
+            error.status = 400;
+        next(error);
     }
-    res.send('')
+})
+
+
+router.post('/receive',async(req,res,next)=>{
+    //로그 남기고 
+    //recieve 돈 증가하기
+    try {
+        var sql="UPDATE accounts SET money = money + ? WHERE ID = ?";
+        var params = [req.body.money,req.body.receiveAccountId];
+        db.executePreparedStatement(sql,params);
+        
+        if(req.body.sendAccountId.substr(0,3)!='003'){
+            sql = "INSERT INTO log ( send, receive, money) VALUES(?,?,?)"
+            params = [req.body.sendAccountId, req.body.receiveAccountId,req.body.money];
+            await db.executePreparedStatement(sql,params);
+        }
+
+        res.json({
+            status:200,
+            msg:'입금 되었습니다.'
+        })
+    } catch (error) {
+        if(!error.status)
+            error.status = 400;
+        next(error)
+    }
 })
 
 router.get('/check/local/:accountID',async(req,res,next)=>{
@@ -49,9 +122,9 @@ router.get('/check/local/:accountID',async(req,res,next)=>{
 })
 
 router.get('/check/:accountID',decode,async(req,res,next)=>{
-    const banknum = req.params.accountID.substr(0,3);
     // console.log(banknum)
     try {
+        const banknum = req.params.accountID.substr(0,3);
         var server;
         for (var x of API) {
             // console.log(x)
@@ -61,7 +134,10 @@ router.get('/check/:accountID',decode,async(req,res,next)=>{
             }
         }
         // console.log(server.URL + server.findURL + req.params.accountID)
-        request({ url: server.URL + server.findURL + req.params.accountID }, (err, data, body) => {
+        const option = { 
+            uri: server.URL + server.findURL + req.params.accountID 
+        }
+        request.get(option, (err, data, body) => {
             if (err) throw err;
             body = JSON.parse(body);
             res.status(body.status).json(body);
